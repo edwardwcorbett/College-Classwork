@@ -21,17 +21,25 @@ struct node* add2List(int c,ptr *H); //function to add contents to linked list
 struct node* insertFirst(ptr *H, int c); //function to add int as first item in list
 struct node* insertAfter(ptr *H, int c); //function to insert int after first node in linked list
 struct node* insertBefore(ptr *H, int c);//function to insert int before first node in linked list
+struct node* clearList(ptr *H);//function to clear list
+struct node* removeNode(int c, ptr *H);
 void printList(ptr (*H));//function to print list
-int menuOption (char a[2], char b[2], char c[2], char d[2], char e[10], char f[10], char g[2], char z[2], char j[2], char k[2], char l[2], char m[2], int h, FILE *i, char fileIn[10], ptr *H); //menu funciton
+int orderedList(ptr (*H), FILE *fPtr);//function to put link list into file
+struct node* menuOption (char a[2], char v[2], char u[2], char b[2], char c[2], char y[2], char w[2], char d[2], char e[10], char f[10], char g[2], char z[2], char j[2], char k[2], char l[2], char m[2], int h, FILE *i, char fileIn[10], ptr *H, FILE *s); //menu funciton
 int validate (char invalid[6], char valid[6], int number);//function to validate input as only int with + or -
 int print2File(char input[10], FILE *b); //function to print char array to file
 int main(void)//function to display instructions
 {        
-  FILE *fPtr; //linked.txt file pointer   
+  FILE *fPtr; //linked.txt file pointer 
+  FILE *oPtr; //ordered.txt file pointer  
   ptr H = NULL; //linked list first node "Head"
   char menu[10]; //array to hold input for menu choice
+  char clear1[2] = {'1', '\0'};  //array used to compare to enter option 1 from menu
   char load2[2] = {'2', '\0'}; //array used to compare to enter option 2 from menu
+  char add3[2] = {'3', '\0'}; //array used to compare to enter option 3 from menu
+  char rem4[2] = {'4', '\0'}; //array used to compare to enter option 4 from menu
   char load5[2] = {'5', '\0'};//array used to compare to enter option 5 from menu
+  char ordered6[2] ={'6', '\0'}; //array used to compare to enter option 6 from menu
   char input[10]; //array to hold input to load into file
   char valid[10]; //array to convert int number to array
   char fileIn[10]; //array to hold data from file
@@ -66,14 +74,19 @@ int main(void)//function to display instructions
     printf("6. Write the list to the \"ordered.txt\" file.\n");
     printf("Q. Quit the program.\n");
     printf("?  ");
+    printf("%p\n", H);
     gets(menu);
-    menu[1]='\0';//second position set to null     
-    menuOption(menu, load2, load5, exitLoad, input, valid, exitMenu, option, exitOp1, exitOp2, exitOp3, exitOp4, number, fPtr, fileIn, &H);
+    menu[1]='\0';//second position set to null      
+    menuOption(menu, clear1, load2, add3, rem4, load5, ordered6, exitLoad, input, valid, exitMenu, option, exitOp1, exitOp2, exitOp3, exitOp4, number, fPtr, fileIn, &H, oPtr);
   }while((strcmp(menu, exitMenu)!=0) && (strcmp(menu, exitMenu2)!=0)); //while menu input is not "q" or "Q"
 }
-int menuOption(char menu[2], char load2[2], char load5[2], char exitLoad[2], char input[10], char valid[10], char exitMenu[2], char option[2], char exitOp1[2], char exitOp2[2], char exitOp3[2], char exitOp4[2], int number, FILE *fPtr, char fileIn[10], ptr *H)
+struct node* menuOption(char menu[2], char clear1[2], char load2[2], char add3[2], char rem4[2], char load5[2], char ordered6[2], char exitLoad[2], char input[10], char valid[10], char exitMenu[2], char option[2], char exitOp1[2], char exitOp2[2], char exitOp3[2], char exitOp4[2], int number, FILE *fPtr, char fileIn[10], ptr *H, FILE *oPtr)
 {
-    if(strcmp(menu,load2)==0) //option 2
+    if(strcmp(menu,clear1)==0)
+    {
+        clearList(&(*H));
+    }        
+    else if(strcmp(menu,load2)==0) //option 2
     {   
             do
             {
@@ -85,6 +98,7 @@ int menuOption(char menu[2], char load2[2], char load5[2], char exitLoad[2], cha
                 option[1]='\0';
                     if(option[0] == 'N' || option [0] == 'n') //writes input to file in new linked.txt
                     {
+                        clearList(&(*H));
                         system("CLS");
                         input[0]=' '; //clear input array
                         if ((fPtr = fopen("linked.txt", "w")) == NULL) //fopen opens file, displays message if cannot open
@@ -107,147 +121,156 @@ int menuOption(char menu[2], char load2[2], char load5[2], char exitLoad[2], cha
                         }
                         fprintf(fPtr, "\0"); // end file
                         fclose(fPtr); //close file
-                    }
-                    //if option E or e is selected, nothing is put into file
-            }while((strcmp(option,exitOp1)!=0) && (strcmp(option,exitOp2)!=0) && (strcmp(option,exitOp3)!=0) && (strcmp(option,exitOp4)!=0));       
-    }
-    if((strcmp(menu,load5)==0) && (strcmp(option,exitOp3)==0))//if the user chooses option 5 after selecting option E or e in option 2
-    {
-        if ((fPtr = fopen("linked.txt", "r")) == NULL) //fopen opens file, displays message if cannot open
-        {
-            printf("Can not open file");
-            system("PAUSE");
-        }
-        while(fgets(fileIn, 10, fPtr) != NULL)
-        {
+
+                        if ((fPtr = fopen("linked.txt", "r")) == NULL) //fopen opens file, displays message if cannot open
+                        {
+                            printf("Can not open file");
+                            system("PAUSE");
+                        }
+                        while(fgets(fileIn, 10, fPtr) != NULL)
+                        {
  
-          fileIn[strlen(fileIn)-1]='\0';  // insert null 
-          validate(fileIn, valid, number); //validate fileIn and put into valid array    
-          if(strcmp(valid, fileIn)==0)//if the valid array and fileIn array match, add the number to Linked List
-            {
-                if(fileIn[strlen(fileIn)-1]=='-')//if last character of input is - 
-                {
-                    number=(atoi(fileIn) * -1); //add - to end of array
-                    add2List(number, &(*H));//insert null at new end
-                }            
-                else
-                {    
-                    number=atoi(fileIn);
-                    add2List(number, &(*H));   //send into function with number and address of head node  
-                }
-            }
+                            fileIn[strlen(fileIn)-1]='\0';  // insert null 
+                            validate(fileIn, valid, number); //validate fileIn and put into valid array    
+                            if(strcmp(valid, fileIn)==0)//if the valid array and fileIn array match, add the number to Linked List
+                            {
+                                if(fileIn[strlen(fileIn)-1]=='-')//if last character of input is - 
+                                {
+                                    number=(atoi(fileIn) * -1); //add - to end of array
+                                    add2List(number, &(*H));//insert null at new end
+                                }            
+                                else
+                                {    
+                                    number=atoi(fileIn);
+                                    add2List(number, &(*H));      //send into function with number and address of head node  
+                                }
+                            } 
+                        }  
+                    fclose(fPtr);//close file
+                    }
+                    if(option[0] == 'E' || option [0] == 'e') //writes input to file in new linked.txt
+                    {
+                    clearList(&(*H));
+                        if ((fPtr = fopen("linked.txt", "r")) == NULL) //fopen opens file, displays message if cannot open
+                        {
+                            printf("Can not open file");
+                            system("PAUSE");
+                        }
+                        while(fgets(fileIn, 10, fPtr) != NULL)
+                        {
+ 
+                            fileIn[strlen(fileIn)-1]='\0';  // insert null 
+                            validate(fileIn, valid, number); //validate fileIn and put into valid array    
+                            if(strcmp(valid, fileIn)==0)//if the valid array and fileIn array match, add the number to Linked List
+                            {
+                                if(fileIn[strlen(fileIn)-1]=='-')//if last character of input is - 
+                                {
+                                    number=(atoi(fileIn) * -1); //add - to end of array
+                                    add2List(number, &(*H));//insert null at new end
+                                }            
+                                else
+                                {    
+                                    number=atoi(fileIn);
+                                    add2List(number, &(*H));      //send into function with number and address of head node  
+                                }
+                            } 
+                        }  
+                    }
+               fclose(fPtr);//close file
+               }while((strcmp(option,exitOp1)!=0) && (strcmp(option,exitOp2)!=0) && (strcmp(option,exitOp3)!=0) && (strcmp(option,exitOp4)!=0));       
+                        //if option E or e is selected, nothing is put into file    
+   }
+
+    else if(strcmp(menu,add3)==0)
+    {
+        input[0]=' '; //clear input array
+        if ((fPtr = fopen("linked.txt", "a")) == NULL) //fopen opens file, displays message if cannot open
+        {
+            printf("Can not open file");
+            system("PAUSE");
+        }
+        printf("\nEnter a series of numbers up to 5 digits long, do not");
+        printf("\ninclude a sign.  Type an \"x\" at anytime to quit:\n\n");
+        while (input[0]!='x')
+        {
+            printf("?  ");  
+            gets(input); //get line of input
+            input[strlen(input)+1] = '\0';//insert null at end of array
+            validate(input, valid, number);
+            if (strcmp(valid,input)==0)//compare number array to input array
+            {   
+                print2File(input,fPtr);//put validated input array into file
             
-        }
-        printList(&(*H));
-        puts("");
-        puts("");
-        system("PAUSE");
-        fclose(fPtr);
-    }
-    else if((strcmp(menu,load5)==0) && (strcmp(option,exitOp4)==0))//if the user chooses option 5 after selecting option E or e in option 2 
-    {
-        if ((fPtr = fopen("linked.txt", "r")) == NULL) //fopen opens file, displays message if cannot open
-        {
-            printf("Can not open file");
-            system("PAUSE");
-        }
-        while(fgets(fileIn, 10, fPtr) != NULL)
-        {
-
-          fileIn[strlen(fileIn)-1]='\0'; // insert null 
-          validate(fileIn, valid, number); //validate fileIn and put into valid array   
-          if(strcmp(valid, fileIn)==0)//if the valid array and fileIn array match, add the number to Linked List
-            {
-                if(fileIn[strlen(fileIn)-1]=='-')//if last character of input is - 
+                if(input[strlen(input)-1]=='-')//if last character of input is - 
                 {
-                    number=(atoi(fileIn) * -1); //add - to end of array
+                    number=(atoi(input) * -1); //add - to end of array
                     add2List(number, &(*H));//insert null at new end
                 }            
                 else
                 {    
-                    number=atoi(fileIn);
+                    number=atoi(input);
                     add2List(number, &(*H));   //send into function with number and address of head node  
-                }
-            }
+                } 
+            }       
         }
-        printList(&(*H));
-        puts("");
-        puts("");
-        system("PAUSE");
-        fclose(fPtr);
+        fprintf(fPtr, "\0"); // end file
+        fclose(fPtr); //close file
     }
-    else if(strcmp(menu,load5)==0 && option[0]=='N' )//if the user chooses option 5 after selecting option N or n in option 2 
+    if(strcmp(menu,rem4)==0)
     {
-        if ((fPtr = fopen("linked.txt", "r")) == NULL) //fopen opens file, displays message if cannot open
+                if((*H)==NULL)
         {
-            printf("Can not open file");
+            printf("The list is empty.");
+            puts("");
+            puts("");
             system("PAUSE");
         }
-        while(fgets(fileIn, 10, fPtr) != NULL)
+        else 
         {
+        input[0]=' '; 
 
-          fileIn[strlen(fileIn)-1]='\0'; // insert null 
-          validate(fileIn, valid, number); //validate fileIn and put into valid array   
-          if(strcmp(valid, fileIn)==0)//if the valid array and fileIn array match, add the number to Linked List
+            printf("\nEnter a number up to 5 digits long, that you want to ");
+            printf("\nfrom the list.  If the number appears in the list multiple times");
+            printf("\nonly the first occurrance of it will be removed.  Type an \"x\" to quit:");
+            while (input[0]!='x')
             {
-                if(fileIn[strlen(fileIn)-1]=='-')//if last character of input is - 
+            printf("?  ");  
+            gets(input); //get line of input
+            input[strlen(input)] = '\0';//insert null at end of array
+            validate(input, valid, number);
+            if (strcmp(valid,input)==0)//compare number array to input array
+            {   
+                
+                
+                if(input[strlen(input)-1]=='-')//if last character of input is - 
                 {
-                    number=(atoi(fileIn) * -1); //add - to end of array
-                    add2List(number, &(*H));//insert null at new end
+                    number=(atoi(input) * -1); //add - to end of array
+                    removeNode(number, &(*H));//insert null at new end
                 }            
                 else
                 {    
-                    number=atoi(fileIn);
-                    add2List(number, &(*H));   //send into function with number and address of head node  
-                }
-            }
+                    number=atoi(input);
+                    removeNode(number, &(*H));   //send into function with number and address of head node  
+                } 
+            } 
+            
+            }      
         }
-        printList(&(*H));
-        puts("");
-        puts("");
-        system("PAUSE");
-        fclose(fPtr);
     }
-    else if(strcmp(menu,load5)==0 && option[0]=='n' )//if the user chooses option 5 after selecting option N or n in option 2 
+    else if(strcmp(menu,load5)==0)
     {
-        if ((fPtr = fopen("linked.txt", "r")) == NULL) //fopen opens file, displays message if cannot open
-        {
-            printf("Can not open file");
-            system("PAUSE");
-        }
-        while(fgets(fileIn, 10, fPtr) != NULL)
-        {
-
-          fileIn[strlen(fileIn)-1]='\0'; // insert null 
-          validate(fileIn, valid, number); //validate fileIn and put into valid array   
-          if(strcmp(valid, fileIn)==0)//if the valid array and fileIn array match, add the number to Linked List
-            {
-                if(fileIn[strlen(fileIn)-1]=='-')//if last character of input is - 
-                {
-                    number=(atoi(fileIn) * -1); //add - to end of array
-                    add2List(number, &(*H));//insert null at new end
-                }            
-                else
-                {    
-                    number=atoi(fileIn);
-                    add2List(number, &(*H));   //send into function with number and address of head node  
-                }
-            }
-        }
         printList(&(*H));
         puts("");
         puts("");
         system("PAUSE");
-        fclose(fPtr);
     }
-    else if(strcmp(menu,load5)==0) //if user has not loaded the list or input to a new list, the list will be empty
+    else if(strcmp(menu,ordered6)==0)
     {
-
+        orderedList(&(*H), oPtr);
         printList(&(*H));
-        puts("");
-        puts("");
         system("PAUSE");
     }
+        
 }
 int validate(char invalid[10], char valid[10], int number) //validate input 
 {
@@ -325,6 +348,7 @@ struct node* add2List(int c, ptr *H) //add int to list using pointer to address 
      {
         insertBefore(&(*H), c); //insert before first node, making it the first node
      }
+
 }  
 struct node* insertFirst(ptr *H, int c)//insert node as first in list
 {
@@ -372,6 +396,29 @@ struct node* insertAfter(ptr *H, int c)
         }
     }
 }
+int orderedList(ptr *H, FILE *oPtr)
+{
+    ptr traverse;
+    int i = 1;
+    traverse = malloc(sizeof(**H));
+    traverse = (*H);
+    if ((oPtr = fopen("ordered.txt", "w")) == NULL) //fopen opens file, displays message if cannot open
+    {
+            printf("Can not open file");
+            system("PAUSE");
+    }
+    fprintf(oPtr, "%s", "\n\nThe values in the Linked List are:\n\n\n");
+    fprintf(oPtr, "%s", "  Item #\t Value\n");
+    fprintf(oPtr, "%s", "  ------\t -----\n");
+    while (traverse)//while node is not null
+    {   
+        fprintf(oPtr, "%5d\t\t %5d \n",i, traverse->data);
+        traverse=traverse->next; //traverse through list
+        i++;
+    }
+    fprintf(oPtr, "\0"); // end file
+    fclose(oPtr); //close file
+}
 void printList(ptr *H) //print link list
 {
     system("CLS");
@@ -379,10 +426,87 @@ void printList(ptr *H) //print link list
     printf("  Item #\t Value\n");
     printf("  ------\t -----\n");
     int i = 1;
-    while (*H)//while node is not null
+    ptr traverse;
+    traverse = malloc(sizeof(**H));
+    traverse = (*H); 
+    while (traverse)//while node is not null
     {   
-        printf(" %5d\t\t %5d \n",i, (*H)->data);
-        (*H)=(*H)->next; //traverse through list
+        printf(" %5d\t\t %5d \n",i, traverse->data);
+        traverse=traverse->next; //traverse through list
         i++;
     }
 }
+struct node* clearList(ptr *H)
+{
+    ptr previous;
+    previous = malloc(sizeof(**H)); 
+    while (*H)//while node is not null
+    {   
+        previous = (*H);
+        (*H)=(*H)->next; //traverse through list
+        free(previous);
+    }
+}
+struct node* removeNode(int c, ptr *H)
+{
+    ptr previous;
+    ptr traverse;
+    traverse = malloc(sizeof(**H));
+    previous = malloc(sizeof(**H));
+    traverse = (*H); 
+    if((*H)->next==NULL)
+    {
+        if(c==(*H)->data)
+        {
+            free((*H));
+            (*H)=NULL;
+        }
+        else
+        {
+            printf("The number is not in the list\n");
+            system("PAUSE");
+        }
+    }
+    else if (c==(*H)->data)
+    {
+        previous = (*H);
+        (*H)=(*H)->next;
+        free(previous);
+    }
+    else if(c!=(*H)->data)
+    {
+        while(traverse)
+        {
+            previous = traverse;
+            traverse=traverse->next;
+            if(traverse->next == NULL)
+            {
+                if(c==traverse->data)
+                {
+                    free(traverse);
+                    previous->next = NULL;
+                    traverse=NULL;
+                }
+                else
+                {
+                    printf("THe number was not in the list.\n");
+                    system("PAUSE");
+                }
+                break;
+            }
+            else if(c==traverse->data)
+            {
+                previous->next = traverse->next;
+                free(traverse);
+                traverse=NULL; 
+                break;  
+            }
+
+        }
+
+       
+    }
+
+
+}
+
