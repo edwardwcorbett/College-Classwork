@@ -1,6 +1,6 @@
 /************************************************************************************
 //FILENAME:ewcproject_6.c
-//NAME: Edward Corbett
+//NAME: 
 //DATE: 10/05/14
 //PURPOSE: The race - a randomized race between a tortoise (T) and hare (H)
 //both tortoise and hare will move based on a random number generated each turn 
